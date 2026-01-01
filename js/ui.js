@@ -107,7 +107,43 @@ export class UI {
             }
         }
     }
+    
+    updateVolumeDisplay(soundId, volume) {
+        const card = document.querySelector(`[data-sound="${soundId}"]`);
+        
+        if (card) {
+            const volumeValue = card.querySelector('.volume-value');
+            if (volumeValue) {
+                volumeValue.textContent = volume;
+            }
+            
+            const volumeBarFill = card.querySelector('.volume-bar-fill');
+            if (volumeBarFill) {
+                volumeBarFill.style.width = `${volume}%`;
+            }
+            
+            const slider = card.querySelector('.volume-slider');
+            if (slider) {
+                slider.value = volume;
+            }
+        }
+    }
+    
+    updateMainPlayButton(isPlaying) {
+        const icon = this.playPauseButton.querySelector('i');
+        
+        if (isPlaying) {
+            icon.classList.remove('fa-play');
+            icon.classList.add('fa-pause');
+        } else {
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+        }
+    }
 }
+
+
+
 
     
     

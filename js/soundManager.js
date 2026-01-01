@@ -53,4 +53,29 @@ export class SoundManager {
         console.log(`volume for ${soundID}: ${volume}`);
         return true;
     }
+    
+    playAll() {
+        for (const [soundId, audio] of this.audioElements) {
+            if (audio.paused) {
+                audio.play();
+            }
+            
+        this.isPlaying = true;
+            
+        }
+    }
+    
+    pauseAll() {
+        for (const [soundId, audio] of this.audioElements) {
+            if (!audio.paused) {
+                audio.pause();
+            }
+            
+        this.isPlaying = false;
+        }
+    }
 }
+
+
+
+

@@ -1,6 +1,13 @@
-import {sounds, defaultPresets} from "./soundData.js";
-import {SoundManager} from "./soundManager.js";
-import {UI} from "./ui.js";
+import {
+    sounds,
+    defaultPresets
+} from "./soundData.js";
+import {
+    SoundManager
+} from "./soundManager.js";
+import {
+    UI
+} from "./ui.js";
 
 class AmbientMixer {
     constructor() {
@@ -11,8 +18,9 @@ class AmbientMixer {
         this.timer = null;
         this.currentSoundState = {};
         this.isInitialized = false;
+        this.masterVolume = 100;
     }
-    
+
     init() {
         try {
             this.ui.init();
@@ -24,16 +32,40 @@ class AmbientMixer {
             console.error("failed to initialize app", error);
         }
     }
-    
+
     setupEventListeners() {
         document.addEventListener('click', async (event) => {
             if (event.target.closest('.play-btn')) {
                 const soundID = event.target.closest('.play-btn').dataset.sound;
                 await this.toggleSound(soundID);
             }
-        })
+        });
+
+        document.addEventListener('input', (event) => {
+            if (event.target.classList.contains('volume-slider')) {
+                const soundID = event.target.dataset.sound;
+                const volume = parseInt(event.target.value);
+                this.setSoundVolume(soundID, volume);
+            }
+        });
+
+        const masterVolumeSlider = document.getElementById('mastervolume');
+        if (masterVolumeSlider) {
+            masterVolumeSlider.addEventListener('input', (event) => {
+                const volume = parseInt(event.target.value);
+                this.setMasterVolume(volume);
+            })
+        }
+        
+        if (this.ui.playPauseButton) {
+            this.ui.playPauseButton.addEventListener('click', () => {
+                this.toggleAllSounds();
+            })
+        }
+
+
     }
-    
+
     loadAllSounds() {
         sounds.forEach((sound) => {
             const audioUrl = `audio/${sound.file}`;
@@ -43,23 +75,120 @@ class AmbientMixer {
             }
         })
     }
-    
-    async toggleSound(soundID) {
-        const audio = this.soundManager.audioElements.get(soundID);
-        
+
+    async toggleSound(soundId) {
+        const audio = this.soundManager.audioElements.get(soundId);
+
         if (!audio) {
-            console.log(`sound ${soundID} not found`);
+            console.log(`sound ${soundId} not found`);
             return false;
         }
-        
+
+        let volume = 0;
+
         if (audio.paused) {
-            this.soundManager.setVolume(soundID, 50);
-            await this.soundManager.playSound(soundID);
-            this.ui.updateSoundPlayButton(soundID, true);
-        } else {
-            this.soundManager.pauseSound(soundID);
-            this.ui.updateSoundPlayButton(soundID, false);
+            const audio = document.querySelector(`[data-sound="${soundId}"]`);
+            const slider = document.querySelector('.volume-slider');
+            if (volume === 0) {
+                volume = 50;
+                this.ui.updateVolumeDisplay(soundId, volume);
+            }
         }
+
+        if (audio.paused) {
+            this.soundManager.setVolume(soundId, volume);
+            await this.soundManager.playSound(soundId);
+            this.ui.updateSoundPlayButton(soundId, true);
+        } else {
+            this.soundManager.pauseSound(soundId);
+            this.ui.updateSoundPlayButton(soundId, false);
+        }
+        
+        this.updateMainPlayButtonState();
+    }
+    
+    //toggle all sounds
+    toggleAllSounds() {
+        if (this.soundManager.isPlaying) {
+            this.soundManager.pauseAll();
+            this.ui.updateMainPlayButton(false);
+            sounds.forEach((sound) => {
+                this.ui.updateSoundPlayButton(sound.id, false);
+            })
+        } else {
+            for (const [soundId, audio] of this.soundManager.audioElements) {
+                const card = document.querySelector(`[data-sound="${soundId}"]`);
+                const slider = card.querySelector('.volume-slider');
+                
+                if (slider) {
+                    let volume = parseInt(slider.value)
+                    
+                    if (volume === 0) {
+                        volume = 50;
+                        slider.value = 50;
+                        this.ui.updateVolumeDisplay(soundId, 50);
+                    }
+                    
+                    this.currentSoundState[soundId] = volume;
+                    
+                    const effectiveVolume = (volume * this.masterVolume) / 100;
+                    audio.volume = effectiveVolume / 100;
+                    this.ui.updateSoundPlayButton(soundId, true);
+                }
+            }
+            
+            this.soundManager.playAll();
+            this.ui.updateMainPlayButton(true);
+        }
+    }
+
+    setSoundVolume(soundID, volume) {
+        const effectiveVolume = (volume * this.masterVolume) / 100;
+        const audio = this.soundManager.audioElements.get(soundId);
+        if (audio) {
+            audio.volume = effectiveVolume / 100;
+        }
+        this.ui.updateVolumeDisplay(soundID, volume);
+        this.updateMainPlayButtonState();
+    }
+
+    setMasterVolume(volume) {
+        this.masterVolume = volume;
+        const masterVolumeValue = document.getElementById('masterVolumeValue');
+        if (masterVolumeValue) {
+            masterVolumeValue.textContent = `${volume}%`;
+        }
+
+        this.applyMasterVolumeToAll();
+    }
+
+    applyMasterVolumeToAll() {
+        for (const [soundId, audio] of this.soundManager.audioElements) {
+            if (!audio.paused) {
+                const card = document.querySelector(`[data-sound="${soundId}"]`);
+                const slider = card.querySelector('.volume-slider');
+
+                if (slider) {
+                    const individualVolume = parseInt(slider.value);
+                    const effectiveVolume = (individualVolume * this.masterVolume) / 100;
+                    audio.volume = effectiveVolume / 100;
+                }
+            }
+        }
+    }
+                
+                
+    updateMainPlayButtonState() {
+        let anySoundsPlaying = false;
+        for (const [soundId, audio] of this.soundManager.audioElements) {
+            if (!audio.paused) {
+                anySoundsPlaying = true;
+                break;
+            }
+        }
+        
+        this.soundManager.isPlaying = anySoundsPlaying;
+        this.ui.updateMainPlayButton(anySoundsPlaying);
     }
 }
 
