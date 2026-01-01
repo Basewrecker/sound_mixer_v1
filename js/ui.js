@@ -135,9 +135,13 @@ export class UI {
         if (isPlaying) {
             icon.classList.remove('fa-play');
             icon.classList.add('fa-pause');
+            const playAllText = document.querySelector('.play-all');
+            playAllText.textContent = 'Pause All';
         } else {
             icon.classList.remove('fa-pause');
             icon.classList.add('fa-play');
+            const playAllText = document.querySelector('.play-all');
+            playAllText.textContent = 'Play All';
         }
     }
 }
