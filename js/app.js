@@ -17,11 +17,21 @@ class AmbientMixer {
         try {
             this.ui.init();
             this.ui.renderSoundCards(sounds);
+            this.setupEventListeners();
             this.loadAllSounds();
             this.isInitialized = true;
         } catch (error) {
             console.error("failed to initialize app", error);
         }
+    }
+    
+    setupEventListeners() {
+        document.addEventListener('click', async (event) => {
+            if (event.target.closest('.play-btn')) {
+                const soundID = event.target.closest('.play-btn').dataset.sound;
+                await this.toggleSound(soundID);
+            }
+        })
     }
     
     loadAllSounds() {
@@ -32,6 +42,24 @@ class AmbientMixer {
                 console.warn(`couldn't load file ${sound.name} from ${audio.url}`);
             }
         })
+    }
+    
+    async toggleSound(soundID) {
+        const audio = this.soundManager.audioElements.get(soundID);
+        
+        if (!audio) {
+            console.log(`sound ${soundID} not found`);
+            return false;
+        }
+        
+        if (audio.paused) {
+            this.soundManager.setVolume(soundID, 50);
+            await this.soundManager.playSound(soundID);
+            this.ui.updateSoundPlayButton(soundID, true);
+        } else {
+            this.soundManager.pauseSound(soundID);
+            this.ui.updateSoundPlayButton(soundID, false);
+        }
     }
 }
 

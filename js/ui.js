@@ -88,4 +88,27 @@ export class UI {
             this.soundCardsContainer.appendChild(card);
         })
     }
+    
+    updateSoundPlayButton(soundID, isPlaying) {
+        const card = document.querySelector(`[data-sound="${soundID}"]`);
+        
+        if (card) {
+            const playBtn = card.querySelector('.play-btn');
+            const icon = playBtn.querySelector('i');
+            
+            if (isPlaying) {
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+                card.classList.add('playing');
+            } else {
+                icon.classList.add('fa-play');
+                icon.classList.remove('fa-pause');
+                card.classList.remove('playing');
+            }
+        }
+    }
 }
+
+    
+    
+    
