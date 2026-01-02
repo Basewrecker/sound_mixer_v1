@@ -42,7 +42,27 @@ class AmbientMixer {
                 const soundID = event.target.closest('.play-btn').dataset.sound;
                 await this.toggleSound(soundID);
             }
+            
+            if (event.target.closest('.preset-btn')) {
+                const presetKey = event.target.closest('.preset-btn').dataset.preset;
+                await this.loadPreset(presetKey);
+                const playAllText = document.querySelector('.play-all');
+                playAllText.textContent = 'Pause All';
+            }
+            
+            if (event.target.closest('.preset-btn')) {
+                await this.loadPreset(presetKey);
+                const playAllText = document.querySelector('.play-all');
+                playAllText.textContent = 'Play All';
+            }
+            
+            if (event.target.closest('#playPauseAll')) {
+                const playAllText = document.querySelector('.play-all');
+                playAllText.textContent = 'Play All';
+            }
         });
+        
+
 
         document.addEventListener('input', (event) => {
             if (event.target.classList.contains('volume-slider')) {
@@ -151,7 +171,6 @@ class AmbientMixer {
 
     setSoundVolume(soundId, volume) {
         this.currentSoundState[soundId] = volume; // stores all the volumes as  a key and obj 
-        console.log(this.currentSoundState);
         const effectiveVolume = (volume * this.masterVolume) / 100;
         const audio = this.soundManager.audioElements.get(soundId);
         if (audio) {
@@ -203,7 +222,42 @@ class AmbientMixer {
     resetAll() {
         this.soundManager.stopAll();
         this.masterVolume = 100;
+        sounds.forEach((sound) => {
+            this.currentSoundState[sound.id] = 0;
+        })
         this.ui.resetUI();
+    }
+    
+    //load a config 
+    loadPreset(presetKey) {
+        const preset = defaultPresets[presetKey];
+        if (!preset) {
+            console.error(`preset ${presetKey} not found`);
+            return false;
+        } 
+        
+        this.soundManager.stopAll();
+        sounds.forEach((sound) => {
+            this.currentSoundState[sound.id] = 0;
+            this.ui.updateVolumeDisplay(sound.id, 0);
+            this.ui.updateSoundPlayButton(sound.id, false);
+        });
+        
+        for (const [soundId, volume] of Object.entries(preset.sounds)) {
+            this.currentSoundState[soundId] = volume;
+            this.ui.updateVolumeDisplay(soundId, volume);
+            const effectiveVolume = (volume * this.masterVolume) / 100;
+            const audio = this.soundManager.audioElements.get(soundId);
+            if (audio) {
+                audio.volume = effectiveVolume / 100;
+                
+                audio.play();
+                this.ui.updateSoundPlayButton(soundId, true);
+            }
+        }
+        
+        this.soundManager.isPlaying = true;
+        this.ui.updateMainPlayButton = true;
     }
 }
 

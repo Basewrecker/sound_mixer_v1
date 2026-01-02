@@ -169,6 +169,7 @@ export class UI {
         this.masterVolumeValue.value = 100;
         this.masterVolumeSlider.textContent = '100';
     }
+    
 }
 
 
