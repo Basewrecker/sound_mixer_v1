@@ -50,14 +50,15 @@ class AmbientMixer {
                 playAllText.textContent = 'Pause All';
             }
             
-            if (event.target.closest('.preset-btn')) {
-                await this.loadPreset(presetKey);
-                const playAllText = document.querySelector('.play-all');
-                playAllText.textContent = 'Play All';
-            }
+//            if (event.target.closest('.preset-btn')) {
+//                await this.loadPreset(presetKey);
+//                const playAllText = document.querySelector('.play-all');
+//                playAllText.textContent = 'Play All';
+//            }
             
             if (event.target.closest('#playPauseAll')) {
                 const playAllText = document.querySelector('.play-all');
+                const icon = document.getElementsByClassName('fa-play');
                 playAllText.textContent = 'Play All';
             }
         });
