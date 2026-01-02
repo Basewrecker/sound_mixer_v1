@@ -81,6 +81,24 @@ export class UI {
         return card;
     }
     
+    createCustomPresetButton(name, presetId) {
+        const button = document.createElement('button');
+        button.className = 'custom-preset-btn bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-all duration-300 relative group';
+        button.dataset.preset = presetId;
+        button.innerHTML = `
+  <i class="fas fa-star mr-2 text-yellow-400"></i>
+  ${name}
+  <button
+    type="button"
+    class="delete-preset absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    data-preset="${presetId}">
+    <i class="fas fa-times text-xs text-white"></i>
+  </button>
+`;
+        return button;
+
+    }
+    
     renderSoundCards(sounds) {
         this.soundCardsContainer.innerHTML = '';
         sounds.forEach((sound) => {
@@ -166,10 +184,72 @@ export class UI {
         });
         
         this.updateMainPlayButton(false);
-        this.masterVolumeValue.value = 100;
-        this.masterVolumeSlider.textContent = '100';
+        if (this.masterVolumeSlider) {
+            this.masterVolumeSlider.value = 50;
+        }
+        if (this.masterVolumeValue) {
+            this.masterVolumeValue.textContent = '50';
+        }
     }
     
+    showModal() {
+        this.modal.classList.remove('hidden');
+        this.modal.classList.add('flex');
+        document.getElementById('presetName').focus();
+    }
+    
+    hideModal() {
+        this.modal.classList.add('hidden');
+        this.modal.classList.remove('flex');
+        document.getElementById('presetName').value = '';
+    }
+    
+    addCustomPreset(name, presetId) {
+        const button = this.createCustomPresetButton(name, presetId);
+        this.customPresetsContainer.appendChild(button);
+    }
+    
+    renderCustomPresets(customPresets) {
+        if (!this.customPresetsContainer) return;
+        
+        this.customPresetsContainer.innerHTML = '';
+        
+        Object.entries(customPresets).forEach(([presetId, preset]) => {
+            this.addCustomPreset(preset.name, presetId);
+        });
+    }
+    
+    updateTimerDisplay(timeString) {
+        if (this.timerDisplay) {
+            this.timerDisplay.textContent = timeString;
+            this.timerDisplay.classList.remove('hidden');
+        }
+    }
+    
+    hideTimerDisplay() {
+        if (this.timerDisplay) {
+            this.timerDisplay.classList.add('hidden');
+        }
+    }
+    
+    updateThemeIcon(isLightTheme) {
+        if (this.themeToggle) {
+            const icon = this.themeToggle.querySelector('i');
+            if (icon) {
+                icon.classList.remove(isLightTheme ? 'fa-moon' : 'fa-sun');
+                icon.classList.add(isLightTheme ? 'fa-sun' : 'fa-moon');
+            }
+        }
+    }
+    
+    removeCustomPreset(presetId) {
+        if (this.customPresetsContainer) {
+            const button = this.customPresetsContainer.querySelector(`[data-preset="${presetId}"]`);
+            if (button) {
+                button.remove();
+            }
+        }
+    }
 }
 
 
