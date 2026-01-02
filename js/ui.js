@@ -144,6 +144,31 @@ export class UI {
             playAllText.textContent = 'Play All';
         }
     }
+    
+    resetUI() {
+        const sliders = document.querySelectorAll('.volume-slider');
+        sliders.forEach((slider) => {
+            slider.value = 0;
+            const soundId = slider.dataset.sound;
+            this.updateVolumeDisplay(soundId, 0);
+        })
+        
+        const playButtons = document.querySelectorAll('.play-btn');
+        playButtons.forEach((btn) => {
+            const icon = btn.querySelector('i');
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+        })
+        
+        const cards = document.querySelectorAll('.sound-card');
+        cards.forEach((card) => {
+            card.classList.remove('fa-playing');
+        });
+        
+        this.updateMainPlayButton(false);
+        this.masterVolumeValue.value = 100;
+        this.masterVolumeSlider.textContent = '100';
+    }
 }
 
 
