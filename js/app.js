@@ -27,6 +27,9 @@ class AmbientMixer {
             this.ui.renderSoundCards(sounds);
             this.setupEventListeners();
             this.loadAllSounds();
+            sounds.forEach((sound) => {
+                this.currentSoundState[sound.id] = 0;
+            });
             this.isInitialized = true;
         } catch (error) {
             console.error("failed to initialize app", error);
@@ -130,7 +133,7 @@ class AmbientMixer {
                     if (volume === 0) {
                         volume = 50;
                         slider.value = 50;
-                        this.ui.updateVolumeDisplay(soundId, 50);
+                        this.ui.updateVolumeDisplay(soundId, volume);
                     }
                     
                     this.currentSoundState[soundId] = volume;
@@ -146,13 +149,15 @@ class AmbientMixer {
         }
     }
 
-    setSoundVolume(soundID, volume) {
+    setSoundVolume(soundId, volume) {
+        this.currentSoundState[soundId] = volume; // stores all the volumes as  a key and obj 
+        console.log(this.currentSoundState);
         const effectiveVolume = (volume * this.masterVolume) / 100;
         const audio = this.soundManager.audioElements.get(soundId);
         if (audio) {
             audio.volume = effectiveVolume / 100;
         }
-        this.ui.updateVolumeDisplay(soundID, volume);
+        this.ui.updateVolumeDisplay(soundId, volume);
         this.updateMainPlayButtonState();
     }
 
